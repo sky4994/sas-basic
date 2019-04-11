@@ -1,0 +1,294 @@
+
+1. sas data set 
+    1) 입력하기 - data a1;
+		input x ;
+		cards;
+		1
+		2
+		3
+	         ;
+	        run; 
+	        기본값 work에 생성 
+		형식 지정 : 문자형열 $   숫자형열 ;
+	        나의 라이브러리 만들기 = libname HIG 'D\sas' ;
+		data HIG.aaa;
+		 set ...
+    2) 불러오기 - proc import out=HIG.k1;
+		datafile = '경로'
+		dbms = excel;
+		sheet = '4$';
+	         run;
+
+2. sas data 계산(산술연산)
+         data ccc;
+	set aaa1;
+	plus = score + 10;
+	minus = plus - 15;
+	division = plus/minus;
+	multiply = division*minus;
+	square = score** 2;
+	root1 = sqrt(score);
+	root2 = score ** 0.5;
+	log = log(score);  *log=loge=ln=log지수;
+	log10 = log10(score);
+	exp = exp(score);
+         run;
+
+3. if 문
+
+4. proc gplot
+
+5. 데이터 합치기 나누기
+   5.1.1 열 기준 합치기
+	data aa_col1;
+ 	  set aa1 aa2 aa3 aa4;
+	run;
+
+	data aa_col2;
+ 	  set aa1 - aa4;
+	run;
+
+   5.1.2 열 기준 나누기
+	data v1 v2 v3 v4;
+	 set a_col;
+	  if grade= 'fresh' then output v1;
+	  else if grade= 'sopho' then output v2;
+	  else if grade= 'junior' then output v3;
+	  else if grade= 'senior' then output v4;
+	run;
+
+
+   5.2.1 행 기준 합치기
+	1) sort시키기
+	proc sort data = h1 out = hh1; by id; run; *sort 시킬때는 원본데이터로 하지 않는게 좋음.;
+	proc sort data = h2 out = hh2; by id; run;
+	proc sort data = h3 out = hh3; by id; run;
+
+	2)행 기준 합치기
+	data hhh;
+	  merge hh1 hh2 hh3;
+	  by id;
+	run;
+
+ 	data f1;
+	  merge hh1(in=a) hh2(in=b);   	*(in = )은 해당 열에 임의로 공통적인 부분을 부여하는 것;
+	  by id;
+	  if a & b;
+	run;
+
+	data ff1;
+ 	  set f1;
+ 	  if no in ('1' '2' '3' '4' '5') then delete;
+	run;
+
+	data ff2;
+	  set f1;
+	  if no not in ('1' '2' '3' '4' '5');
+	run;
+
+   5.2.2 행 기준 나누기
+
+
+6. substr 및 다른 많은 함수들 (0326실습파일)
+
+7. 기본적인 프로시져
+
+proc freq 
+ data=k1; 
+ table dept*id1; 
+run; 
+
+data m11;
+set m1;
+ *id=_col2;
+ *drop _col2;
+ rename _col2=id;  *label은 그대로 아이디, 그러나 col name은 _col2에서 id로 변경됨.;
+run;
+
+
+proc contents data=k1; run;
+
+proc means data=k1; 
+  var first second third; 
+run;
+
+proc means data=k1; 
+  var first second third; *숫자 변수(평균을 구하고 싶은 변수);
+  class id2 ; *문자 변수 (항목별로 보고 싶은 변수);
+run;
+
+proc means data=b mean var median max min std; (*proc means에서 원하는 값만 빼서 보려면 첫줄에 쓰면 된다.;)
+var first; 
+run;
+
+proc means data=b clm alpha=0.02; *신뢰구간 구하는 방법(98% 디폴드값 0.05);
+var first; 
+run;
+
+proc univariate data=b plot;
+var first;
+run;
+
+
+proc univariate data=k1;
+  var first second;
+  class id2;
+run;
+
+proc corr data=k1;
+  var first second;
+run;
+
+proc corr data=b rank;
+var first second third;
+run;
+
+
+data b2;
+set b;
+id3 = substr(id, 3,2);
+if mod(NO , 2) =1 then sex ='m' ;
+else sex='f' ;
+run;
+
+proc summary data=aaa1; *자료를 요약하라;
+  class id1 sex;					*뭐뭐 별로 보고싶니?;
+  var first second third;			*무슨 변수에 대해서?;
+  output out = bbb sum=;		*어디로 만들어줄까?  sum=, mean= 등등 이 있음;
+ run;
+
+8. 그래프
+
+proc gchart data=k;
+ vbar3d points / midpoints= 0 to 100 by 5;
+ run;
+
+ proc gchart data=k;
+ 	hbar points;
+ run;
+
+ proc gplot data=aaa1;
+	plot first * second;
+run; quit;
+
+ proc gplot data=aaa1;
+	plot first * third;
+run; quit;
+
+proc gplot data=aaa1;
+	plot first * id1 second*id1 third*id1/overlay;
+run; quit;
+
+
+proc gplot data=z1;
+	plot (pig egg milk corn bread fruit etc)*cow;
+run; quit;
+
+proc sgscatter data=z1;
+	matrix  cow pig egg milk corn bread fruit etc;
+run; quit;
+
+
+9. data구조 바꾸기
+proc transpose data=k2 out=kk2;
+  var _014_1_4 _014_2_4 _014_3_4 _014_4_4
+       _015_1_4 _015_2_4 _015_3_4 _015_4_4
+       _016_1_4 _016_2_4 _016_3_4 _016_4_4
+       _017_1_4 _017_2_4 _017_3_4 _017_4_4
+       _018_1_4 _018_2_4 _018_3_4 _018_4_4;
+run;
+
+proc transpose data=k2 out=kkk2; run;
+
+symbol i =spline;
+proc gplot data=kk2;
+	plot (col1-col18)*_NAME_ /overlay;
+run; quit;
+
+10. 통계적 확률분포(이산형+ 연속형 일부)
+http://support.sas.com/documentation/cdl/en/lrdict/64316/HTML/default/viewer.htm#a000208980.htm
+
+**이산형 분포
+
+*베르누이 분포표;
+data bernoulli;
+ input x;
+ cards;
+ 0
+ 1
+;
+run;
+
+data bernoulli;
+	set bernoulli;
+ pdf = pdf('bernoulli',x,0.3) ;
+ cdf = cdf('bernoulli',x,0.3);
+run;
+
+*이항분포 분포표;
+data binom;
+ input x @@;
+ cards;
+ 0 1 2 3 4 5 6 7 8 9 10
+;
+run;
+
+data binom;
+	set binom;
+ pdf = pdf('binom',x,0.2,10);
+ cdf = cdf('binom',x,0.2,10);
+run;
+
+data binom1;
+ binom1 = cdf('binom',8,0.2,10)-cdf('binom',2,0.2,10);
+ binom2 = cdf('binom',10,0.2,10)-cdf('binom',3,0.2,10);
+ run;
+
+
+*포아송 분포표;
+ data poisson;
+ input x @@;
+ cards;
+ 0 1 2 3 4 5 6 7 8 9 10 100
+;
+run;
+
+data poisson;
+ set poisson;
+ pdf = pdf('poisson',x,3);
+ cdf = cdf('poisson',x,3);
+run;
+
+**이제부터 연속형 분포;
+
+*정규분포 + 표준정규분포;
+data norm;
+ input x @@;
+ cards;
+-3 -2 -1 0 1 2 3 
+;
+run;
+
+data norm;
+ set norm;
+ pdf = pdf('normal',x,0,2); * 'normal',x, 평균, 표준편차 순;
+ cdf = cdf('normal',x,0,2);
+ cdf1 = probnorm(x);
+run;
+
+proc gplot data= norm;
+	plot pdf*x cdf*x/overlay;
+run;
+
+
+11. 반복문 기초 구조
+data n;
+	i = 0 ;
+	x = 0 ;
+	do i =1 to 10 /*by 0.1*/ ;
+	 x = x + i ;
+	output;
+	end;
+
+run;
+
